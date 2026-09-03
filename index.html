@@ -459,47 +459,22 @@
             z-index: 1;
         }
 
-        /* ── Ambient Edge Glow ── */
-        .ambient-glow {
+        /* ── Ambient Edge Glow (CSS-only, GPU accelerated) ── */
+        .ambient-wrap {
             position: fixed;
+            inset: -60px;
             z-index: 0;
             pointer-events: none;
-            filter: blur(80px);
-            opacity: 0.5;
-            transition: background-color 0.8s ease;
-            mix-blend-mode: screen;
+            overflow: hidden;
         }
 
-        .ambient-glow--left {
-            top: 10%;
-            left: -40px;
-            width: 120px;
-            height: 80%;
-            border-radius: 0 50% 50% 0;
-        }
-
-        .ambient-glow--right {
-            top: 10%;
-            right: -40px;
-            width: 120px;
-            height: 80%;
-            border-radius: 50% 0 0 50%;
-        }
-
-        .ambient-glow--top {
-            top: -40px;
-            left: 10%;
-            width: 80%;
-            height: 100px;
-            border-radius: 0 0 50% 50%;
-        }
-
-        .ambient-glow--bottom {
-            bottom: -40px;
-            left: 10%;
-            width: 80%;
-            height: 100px;
-            border-radius: 50% 50% 0 0;
+        .ambient-wrap video {
+            width: calc(100% + 120px);
+            height: calc(100% + 120px);
+            object-fit: cover;
+            filter: blur(60px) saturate(2) brightness(0.8);
+            opacity: 0.4;
+            transform: scale(1.1);
         }
 
         /* ═══════════════════════════════════════════════════════════════
@@ -1028,11 +1003,11 @@
     </div>
 
     <!-- ═══════════ AMBIENT EDGE GLOW ═══════════ -->
-    <div class="ambient-glow ambient-glow--left" id="glowLeft"></div>
-    <div class="ambient-glow ambient-glow--right" id="glowRight"></div>
-    <div class="ambient-glow ambient-glow--top" id="glowTop"></div>
-    <div class="ambient-glow ambient-glow--bottom" id="glowBottom"></div>
-    <canvas id="ambientCanvas" style="display:none;" width="16" height="9"></canvas>
+    <div class="ambient-wrap">
+        <video autoplay muted loop playsinline preload="auto">
+            <source src="backgroundv.mp4" type="video/mp4">
+        </video>
+    </div>
 
     <!-- ═══════════ GRAIN OVERLAY ═══════════ -->
     <div class="grain"></div>
@@ -1195,53 +1170,6 @@
                 p.style.height = p.style.width;
                 container.appendChild(p);
             }
-        })();
-
-        // ── Ambient Edge Lighting (Ambilight) ──
-        (() => {
-            const video = document.getElementById('bgVideo');
-            const canvas = document.getElementById('ambientCanvas');
-            const ctx = canvas.getContext('2d', { willReadFrequently: true });
-            const glowL = document.getElementById('glowLeft');
-            const glowR = document.getElementById('glowRight');
-            const glowT = document.getElementById('glowTop');
-            const glowB = document.getElementById('glowBottom');
-
-            function sampleEdge(x, y, w, h) {
-                const data = ctx.getImageData(x, y, w, h).data;
-                let r = 0, g = 0, b = 0, count = 0;
-                for (let i = 0; i < data.length; i += 4) {
-                    r += data[i];
-                    g += data[i + 1];
-                    b += data[i + 2];
-                    count++;
-                }
-                r = Math.round(r / count);
-                g = Math.round(g / count);
-                b = Math.round(b / count);
-                // Boost saturation a bit
-                const max = Math.max(r, g, b);
-                const boost = max > 0 ? 255 / max * 0.8 : 1;
-                return `rgb(${Math.min(255, Math.round(r * boost))}, ${Math.min(255, Math.round(g * boost))}, ${Math.min(255, Math.round(b * boost))})`;
-            }
-
-            function updateGlow() {
-                if (video.readyState < 2) {
-                    requestAnimationFrame(updateGlow);
-                    return;
-                }
-                ctx.drawImage(video, 0, 0, 16, 9);
-
-                glowL.style.backgroundColor = sampleEdge(0, 0, 2, 9);
-                glowR.style.backgroundColor = sampleEdge(14, 0, 2, 9);
-                glowT.style.backgroundColor = sampleEdge(0, 0, 16, 2);
-                glowB.style.backgroundColor = sampleEdge(0, 7, 16, 2);
-
-                setTimeout(() => requestAnimationFrame(updateGlow), 200);
-            }
-
-            video.addEventListener('playing', () => requestAnimationFrame(updateGlow));
-            if (!video.paused) requestAnimationFrame(updateGlow);
         })();
 
         // ═══════════════════════════════════════════════════════════════
