@@ -65,14 +65,8 @@
             height: 100%;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
-        }
-
-        body.scrollable {
-            overflow-y: auto;
-        }
-
-        html.scrollable {
-            overflow-y: auto;
+            position: fixed;
+            inset: 0;
         }
 
         a {
@@ -1309,12 +1303,6 @@
 
             const totalTime = 800 + cards.length * 150 + 300;
             setTimeout(() => footer.classList.add('visible'), totalTime);
-
-            // Unlock scrolling after everything is revealed
-            setTimeout(() => {
-                document.documentElement.classList.add('scrollable');
-                document.body.classList.add('scrollable');
-            }, totalTime + 500);
         }
 
         // ── Magnetic Hover Effect on cards (desktop) ──
